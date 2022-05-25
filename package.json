@@ -15,6 +15,9 @@
     "web": "expo start --web",
     "eject": "expo eject"
   },
+  "prisma": {
+    "seed": "node prisma/seed/index.js"
+  },
   "dependencies": {
     "@apollo/client": "^3.5.10",
     "@apollo/protobufjs": "^1.2.2",

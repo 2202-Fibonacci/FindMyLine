@@ -9,7 +9,7 @@ const ServiceAlert = require("./datasources/ServiceAlert");
 const TripFeed = require("./datasources/TripFeed");
 const ElevatorAlert = require("./datasources/ElevatorAlert");
 const { PrismaClient } = require("@prisma/client");
-// const prisma = new PrismaClient()
+const prisma = new PrismaClient()
 //TODO do we need dataloader since we are not really using DataSource? maybe at our level it doesn't matter?
 //dataloader, to "batch and de-dupe requests"
 require("dotenv").config();
@@ -20,17 +20,17 @@ const server = new ApolloServer({
   plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
   typeDefs: fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf8"),
   resolvers,
-  // context: ({ req }) => {
-  //   // console.log(req.body)
-  //   return {
-  //     ...req,
-  //     prisma,
-  //     userId:
-  //       req && req.headers.authorization
-  //         ? getUserId(req)
-  //         : null
-  //   }
-  // },
+  context: ({ req }) => {
+    // console.log(req.body)
+    return {
+      ...req,
+      prisma,
+      userId:
+        req && req.headers.authorization
+          ? getUserId(req)
+          : null
+    }
+  },
   dataSources: () => ({
     tripFeed: new TripFeed(),
     alertFeed: new ServiceAlert(),

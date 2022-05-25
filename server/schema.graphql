@@ -6,12 +6,15 @@ type Query {
   elevatorAlert(stationId: String): [ElevatorUpdate]
   stationUpdate(stationId: String): [TripUpdate]
   commentFeed: [Comment]
+  getFavorites:[Station]
+  getUser(userId:ID):User
 }
 
 type Mutation {
   post(text: String!):Comment!
   signup(email: String!, password: String!, username:String!): AuthPayload
   login(email:String!, password:String!): AuthPayload
+  favorite(stopId: String!):Station
 }
 
 type ElevatorUpdate {
@@ -60,6 +63,7 @@ type Station {
   long: Float!
   borough: String
   accessible: Boolean! #this means wheelchair accessible?
+  stopId: String
 }
 
 # enum Direction {
@@ -75,6 +79,12 @@ type User {
   routes: [Route]
   points: Int
   comments: [Comment]
+  stations: [Station!]
+}
+
+type StationsFavoredByUsers {
+  user: User
+  station: Station
 }
 
 type AuthPayload {

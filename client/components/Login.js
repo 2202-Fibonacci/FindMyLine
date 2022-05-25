@@ -2,8 +2,7 @@ import React, {useState} from 'react';
 import { StyleSheet, Text, View, Pressable, TextInput} from "react-native";
 import { gql, useMutation, useApolloClient } from "@apollo/client";
 import * as SecureStore from 'expo-secure-store';
-import AUTH_TOKEN from "../../constants"
-// import 'dotenv/config' => this causes error with 'fs'
+
 
 
 
@@ -18,7 +17,10 @@ const SIGNUP_MUTATION = gql`
             password: $password,
             username: $username,
         ) {
-            token
+            token,
+            user{
+                username
+            }
         }
     }
 `;
@@ -32,12 +34,16 @@ const LOGIN_MUTATION = gql`
             email: $email, 
             password: $password
         ){
-            token
+            token,
+            user{
+                username
+            }
         }
     }
 `;
 
 const Login = () => {
+
     const client = useApolloClient()
     const [formState, setFormState] = useState({
         login: true,
@@ -47,6 +53,7 @@ const Login = () => {
     });
 
     async function login ({email, password} ){
+        console.log('loggring in..')
         try {
             const res = await client.mutate({
             mutation:LOGIN_MUTATION,
@@ -55,7 +62,8 @@ const Login = () => {
             }
         })
         console.log('logged in!')
-        await SecureStore.setItemAsync("key", res.data.signup.token);
+        await SecureStore.setItemAsync("key", res.data.login.token);
+        console.log(res.data.login.user.username)
         }catch (e){
             console.log(e)
         }
@@ -63,14 +71,23 @@ const Login = () => {
 
     async function signup ({username, email, password} ){
         try {
-            const res = await client.mutate({
+            let res = await client.mutate({
             mutation:SIGNUP_MUTATION,
             variables:{
                 username, email, password
-            }
-        })
+                }
+            })
         await SecureStore.setItemAsync("key", res.data.signup.token);
         console.log('signed up!')
+        console.log(res.data.signup.user.username)
+
+        res = await client.mutate({
+            mutation: LOGIN_MUTATION,
+            variables: {
+                email, password
+            }
+        })
+        console.log('logged in ', res.data.login.user.username)
         }catch (e){
             console.log(e)
         }
@@ -130,6 +147,7 @@ const Login = () => {
                                         password: formState.password
                                     }
                                 )
+
                             } catch (e) {
                                 console.log('mutation error')
                                 console.error(e)

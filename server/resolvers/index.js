@@ -15,12 +15,17 @@ module.exports = {
       await dataSources.elevatorFeed.getElevatorAlerts(stationId),
     stationUpdate: async (_, { stationId }, { dataSources }) =>
       await dataSources.tripFeed.getStationUpdate(stationId),
-    commentFeed: async (root, args, context) =>   
-      await context.prisma.comment.findMany(),
+    getFavorites: async (_, __, context) => {
+      const { userId } = context;
+      return await context.prisma.station.findMany({
+        where: {
+          favoritedById: userId
+          }
+        })
+      },
   },
   Mutation: {
     signup: async (parent, args, context) => {
-      console.log(args.username)
       const password = await bcrypt.hash(args.password, 10)
       const user = await context.prisma.user.create({ data: { ...args, password } })
       const token = jwt.sign({ userId: user.id }, APP_SECRET)
@@ -44,15 +49,15 @@ module.exports = {
         user,
       }
     },
-    post: async (root, args, context) => {
+    favorite: async (root, args, context) => {
       const { userId } = context;
-      return await context.prisma.comment.create({
+      return await context.prisma.station.create({
           data: {
-              text: args.text,
-              postedBy: { connect: { id: userId }}
+              stopId: args.stopId,
+              favoritedBy: { connect: { id: userId }}
           }
       })
-    }
+    },
   }
 }
 
@@ -70,4 +75,108 @@ module.exports = {
 //   Mutation,
 //   User,
 //   Comment
-// }
+// 
+
+ // favorite: async (root, args, context) => {
+    //   const { userId } = context;
+
+    //   return await context.prisma.StationsFavoredByUsers.create({
+    //     data:{
+    //       userId: userId,
+    //       stationId: args.stopId
+    //     }
+    //   })
+    // },
+    // favorite: async (root, args, context) => {
+    //   return await context.prisma.StationsFavoredByUsers.create({
+    //     data:{
+    //       userId: context.userId,
+    //       stationId: args.stopId
+    //     }
+    //   })
+    // },
+    // favorite: async (root, {stopId}, context) => {
+    //   const { userId } = context;
+
+    //   return await context.prisma.user.update({
+    //     where: {
+    //       id: userId
+    //     },
+    //     data:{
+    //       stations:{
+    //         connect:{
+    //           id: stopId
+    //         }
+    //       }
+    //     }
+    //   })
+    // },
+    // favorite: async (root, {stopId}, context) => {
+    //   const { userId } = context;
+    //   const station = await context.prisma.station.findUnique({
+    //     where: {
+    //       id: stopId
+    //     }
+    //   })
+
+    //   return await context.prisma.station.update({
+    //     data:{
+    //       user:{
+    //         connect:{
+    //           id: userId
+    //         }
+    //       }
+    //     }
+    //   })
+    // },
+    // favorite: async (root, {stopId}, context) => {
+    //   const { userId } = context;
+    //   const station = await context.prisma.station.findUnique({
+    //     where: {
+    //       id: stopId
+    //     }
+    //   })
+
+    //   return await context.prisma.station.update({
+    //     data:{
+    //       user:{
+    //         connect:{
+    //           id: userId
+    //         }
+    //       }
+    //     }
+    //   })
+    // },
+    // favorite: async (root, {stopId}, context) => {
+    //   const { userId } = context;
+    //   return await context.prisma.station.update({
+    //     where: {
+    //       id: stopId
+    //     },
+    //     data: {
+    //       user: { connect: {
+    //         id: userId 
+    //       }
+    //     }
+    //     }
+    //   })
+    // },
+  // // },
+  //   favorite: async (root, args, context) => {
+  //     const { userId } = context;
+  //     return await context.prisma.station.create({
+  //       data: {
+  //         stopId: args.stopId,
+  //         favoritedBy: { connect: {id: userId }}
+  //       }
+  //     })
+  //   },
+  // },
+  // User:{
+  //   stations: async (root, args, context) => {
+  //     return context.prisma.user.findUnique({ where: { id: parent.id } }).stations()
+  //   }
+  //},
+  // favoritedBy(root, args, context) {
+  //   return context.prisma.comment.findUnique({ where: { id: parent.id } }).favoritedBy()
+  // }

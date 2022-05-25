@@ -45,9 +45,21 @@ async function signup(parent, args, context) {
         }
     })
 }
+
+async function favorite(root, args, context){
+  const { userId } = context;
+   
+  return await context.prisma.station.create({
+    data: {
+      text: args.text,
+      favoritedBy: { connect: {id: userId }}
+    }
+  })
+}
   
   module.exports = {
     signup,
     login,
     post,
+    favorite
   }
